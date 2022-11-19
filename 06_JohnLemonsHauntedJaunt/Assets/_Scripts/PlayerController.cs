@@ -1,3 +1,7 @@
+#if UNITY_ANDROID || UNITY_IOS
+#define USING_MOBILE
+#endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,9 +14,17 @@ public class PlayerController : MonoBehaviour
     private Rigidbody _rigidbody;
     private AudioSource _audioSource;
 
+#if USING_MOBILE
+    public Joystick joystick;
+#endif
+
     [SerializeField, Range(30f, 180)]
     private float turnSpeed = 30;
     private Quaternion rotation = Quaternion.identity;
+
+    private float horizontal;
+    private float vertical;
+    private float joystickSensibility = 0.2f;
 
     // Start is called before the first frame update
     void Start()
@@ -21,12 +33,19 @@ public class PlayerController : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
         _audioSource = GetComponent<AudioSource>();
     }
-
+    
     // Update is called once per frame
     void FixedUpdate() //----- Fixed Update! Porque es fisicas!
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
+#if USING_MOBILE
+        horizontal = (Math.Abs(joystick.Horizontal) >= joystickSensibility) ? joystick.Horizontal : 0;
+        vertical = (Math.Abs(joystick.Vertical) >= joystickSensibility) ? joystick.Vertical : 0;
+        Debug.Log(horizontal + " | " + vertical);
+
+#else
+        horizontal = Input.GetAxis("Horizontal");
+        vertical = Input.GetAxis("Vertical");
+#endif
 
         movement.Set(horizontal, 0, vertical);
         movement.Normalize();
